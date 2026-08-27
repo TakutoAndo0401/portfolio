@@ -1,0 +1,11 @@
+{
+  "name": "terminal-portfolio",
+  "private": true,
+  "scripts": {
+    "dev": "python3 -m http.server 4173 -d public",
+    "deploy": "wrangler pages deploy public --project-name=takuto-portfolio"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
