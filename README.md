@@ -1,7 +1,6 @@
 # Terminal Portfolio
 
 ターミナル風のインタラクティブなポートフォリオサイト。
-ビルド不要・依存ゼロの静的サイトです（サイト本体は `public/`）。
 
 ## プレビュー
 
@@ -23,7 +22,7 @@ npm run dev
 | `FILESYSTEM` | ディレクトリ構造そのもの |
 
 ASCII ロゴは `public/js/app.js` 先頭の `ASCII_LOGO`。
-[patorjk.com/software/taag](https://patorjk.com/software/taag/)（Standard フォント）で再生成できます。
+[patorjk.com/software/taag](https://patorjk.com/software/taag/)（Standard フォント）で再生成可能。
 
 ## コマンド一覧
 
@@ -31,22 +30,3 @@ ASCII ロゴは `public/js/app.js` 先頭の `ASCII_LOGO`。
 - ショートカット: `about` `skills` `projects` `contact`
 - おまけ: `neofetch` `theme` `open` `whoami` `history` `banner` `exit`
 - 隠しコマンド: `ls -a` で見つかる場所 / `sudo` / `rm -rf /` / `matrix` / `hack` / `coffee` / `crt`
-
-## デプロイ（Cloudflare Pages）
-
-### A. CLI で直接デプロイ（最速）
-
-```bash
-npx wrangler login          # 初回のみ（ブラウザで Cloudflare 認証）
-npm run deploy              # public/ を takuto-portfolio プロジェクトへアップロード
-```
-
-→ `https://takuto-portfolio.pages.dev` で公開されます。
-
-### B. GitHub 連携（push で自動デプロイ）
-
-1. このフォルダを GitHub リポジトリとして push
-2. Cloudflare ダッシュボード → Workers & Pages → Create → Pages → リポジトリを接続
-3. Build 設定: **Framework preset: None / Build command: なし / Output directory: `public`**
-
-`public/_headers` によりセキュリティヘッダーとキャッシュが自動適用されます。
