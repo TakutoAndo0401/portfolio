@@ -44,6 +44,9 @@ const escapeHtml = (s) =>
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+const isMac = /mac|iP(hone|ad|od)/i.test(navigator.userAgentData?.platform ?? navigator.platform);
+const CLEAR_KEY = isMac ? "⌘+K" : "Ctrl+K";
+
 function scrollToBottom() {
   screenEl.scrollTop = screenEl.scrollHeight;
 }
@@ -207,7 +210,7 @@ const COMMANDS = {
         print(`  <span class="c-accent">${name.padEnd(10)}</span> ${c.desc}`);
       }
       print();
-      print(`<span class="c-muted">TIPS: <span class="bold">Tab</span>=補完 / <span class="bold">↑↓</span>=履歴 / <span class="bold">Ctrl+L</span>=画面クリア</span>`);
+      print(`<span class="c-muted">TIPS: <span class="bold">Tab</span>=補完 / <span class="bold">↑↓</span>=履歴 / <span class="bold">${CLEAR_KEY}</span>=画面クリア</span>`);
       print(`<span class="c-muted">どこかに隠しコマンドや隠しファイルも…🤫</span>`);
     },
   },
@@ -460,7 +463,7 @@ const COMMANDS = {
       const on = document.body.classList.toggle("matrix-on");
       if (on) {
         startMatrix();
-        print(`Wake up, Neo... <span class="c-muted">(止めるにはもう一度 ${cmdBtn("matrix")})</span>`, "c-accent");
+        print(`Wake up, Neo... <span class="c-muted">(止めるには <span class="bold">Esc</span>、またはもう一度 ${cmdBtn("matrix")})</span>`, "c-accent");
       } else {
         stopMatrix();
         print(`現実世界へようこそ。`, "c-muted");
@@ -676,11 +679,6 @@ hiddenInput.addEventListener("keydown", async (e) => {
     syncDisplay();
     return;
   }
-  if (e.ctrlKey && e.key.toLowerCase() === "l") {
-    e.preventDefault();
-    COMMANDS.clear.fn();
-    return;
-  }
   if (e.ctrlKey && e.key.toLowerCase() === "c") {
     if (window.getSelection()?.toString()) return; // コピーは邪魔しない
     e.preventDefault();
@@ -706,6 +704,26 @@ document.addEventListener("keydown", (e) => {
     hiddenInput.focus({ preventScroll: true });
   }
 });
+
+/* 画面クリア: mac=⌘K / win=Ctrl+K */
+document.addEventListener("keydown", (e) => {
+  const clearCombo = e.key.toLowerCase() === "k" && (isMac ? e.metaKey && !e.ctrlKey : e.ctrlKey);
+  if (clearCombo) {
+    e.preventDefault();
+    COMMANDS.clear.fn();
+  }
+});
+
+/* matrix 中の脱出: Esc で停止（画面が見えなくても抜けられる） */
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape") return;
+  if (!document.body.classList.contains("matrix-on")) return;
+  e.preventDefault();
+  e.stopPropagation();
+  document.body.classList.remove("matrix-on");
+  stopMatrix();
+  print(`現実世界へようこそ。`, "c-muted");
+}, true);
 
 /* クリック実行（cmd-btn / ls・tree の項目） */
 document.addEventListener("click", async (e) => {
