@@ -24,32 +24,30 @@ const STATS = { totalCommits: "9,500+", since: 2021 };
 
 const SKILLS = {
   "frontend.json": [
-    { name: "TypeScript", level: 9 },
-    { name: "React / Next.js", level: 9 },
-    { name: "HTML / CSS / SCSS", level: 8 },
-    { name: "JavaScript", level: 8 },
-    { name: "Vue.js", level: 6 },
+    { name: "TypeScript", level: 7 },
+    { name: "React / Next.js", level: 7 },
+    { name: "HTML / CSS / SCSS", level: 7 },
+    { name: "JavaScript", level: 7 },
+    { name: "Vue.js", level: 5 },
   ],
   "testing.json": [
-    { name: "Vitest / Jest", level: 8 },
-    { name: "Testing Library", level: 8 },
-    { name: "Storybook", level: 8 },
+    { name: "Vitest / Jest", level: 7 },
+    { name: "Testing Library", level: 7 },
+    { name: "Storybook", level: 7 },
     { name: "Playwright (E2E)", level: 7 },
-    { name: "MSW (API mocking)", level: 7 },
-    { name: "A11y (markuplint)", level: 7 },
   ],
   "backend.json": [
     { name: "Node.js", level: 7 },
-    { name: "Rust / Tauri", level: 5 },
-    { name: "PHP / Laravel", level: 5 },
-    { name: "Python", level: 4 },
+    { name: "Rust / Tauri", level: 1 },
+    { name: "PHP / Laravel", level: 2 },
+    { name: "Python", level: 1 },
   ],
   "tools.json": [
     { name: "Git / GitHub", level: 9 },
     { name: "AI Driven Development", level: 8 },
     { name: "Biome / ESLint / Prettier", level: 8 },
-    { name: "GitHub Actions (CI/CD)", level: 7 },
-    { name: "Docker", level: 6 },
+    { name: "GitHub Actions (CI/CD)", level: 8 },
+    { name: "Docker", level: 1 },
   ],
 };
 
@@ -92,6 +90,45 @@ const PROJECTS = [
   },
 ];
 
+/* =========================================================
+ *  hobbies
+ * ========================================================= */
+
+/* 趣味: level は 0-10 の熱量。cmd を付けると関連ディレクトリへのボタンが出ます */
+const HOBBIES = [
+  { name: "写真", level: 8, comment: "旅先のスナップと風景が多め。撮った写真は photos/ に置いています。", cmd: "gallery" },
+  { name: "音楽", level: 9, comment: "作業中も移動中もずっと何か流してます。好きな曲は music/ から聴けます。", cmd: "cat hobbies/music/playlist.m3u" },
+  { name: "ガジェット", level: 7, comment: "キーボード・ターミナル環境いじり。このサイトもその延長です。" },
+  { name: "コーヒー", level: 6, comment: "浅煎りのハンドドリップ派。" },
+];
+
+/* 写真: public/img/photos/ に置いたファイル名を file に指定 */
+const PHOTOS = [
+  { file: "sample-sunset.svg", title: "夕暮れの海", place: "神奈川", date: "2024.05", camera: "iPhone 15 Pro" },
+  { file: "sample-city-night.svg", title: "夜の街", place: "東京・新宿", date: "2024.02", camera: "iPhone 15 Pro" },
+  { file: "sample-forest.svg", title: "森の小径", place: "栃木・日光", date: "2023.10", camera: "iPhone 15 Pro" },
+  { file: "sample-coffee.svg", title: "朝のコーヒー", place: "自宅", date: "2023.08", camera: "iPhone 15 Pro" },
+];
+
+/* 音楽: spotify は track ID (https://open.spotify.com/track/<ID>) */
+const MUSIC = [
+  {
+    id: "never-gonna",
+    title: "Never Gonna Give You Up",
+    artist: "Rick Astley",
+    spotify: "4uLU6hMCjMI75M1A2tKUQC",
+    comment: "サンプル曲です。data.js の MUSIC を書き換えてください。",
+    featured: true,
+  },
+  {
+    id: "brightside",
+    title: "Mr. Brightside",
+    artist: "The Killers",
+    spotify: "3n3Ppam7vgaVa1iaRUc9Lp",
+    comment: "サンプル曲その2。",
+  },
+];
+
 const HISTORY_TIMELINE = [
   { year: "1999.04.01", text: "栃木県宇都宮市に生まれる" },
   { year: "2021.03", text: "東京電機大学 システムデザイン工学部 情報システム工学科 卒業" },
@@ -130,6 +167,25 @@ const FILESYSTEM = {
       children: Object.fromEntries(
         PROJECTS.map((p) => [p.id + ".md", { type: "file", render: "project", key: p.id }])
       ),
+    },
+    "hobbies": {
+      type: "dir",
+      children: {
+        "interests.md": { type: "file", render: "interests" },
+        "photos": {
+          type: "dir",
+          children: Object.fromEntries(
+            PHOTOS.map((p) => [p.file, { type: "file", render: "photo", key: p.file }])
+          ),
+        },
+        "music": {
+          type: "dir",
+          children: {
+            "now_playing.txt": { type: "file", render: "now-playing" },
+            "playlist.m3u": { type: "file", render: "playlist" },
+          },
+        },
+      },
     },
     "contact": {
       type: "dir",

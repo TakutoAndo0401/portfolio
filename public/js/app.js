@@ -35,6 +35,7 @@ let histIdx = -1;
 let histDraft = "";
 let animating = false;   // 自動タイピング中
 let matrixTimer = null;
+let pendingConfirm = null; // [y/N] 確認待ちの処理
 
 /* =========================================================
  *  utils
@@ -158,6 +159,54 @@ const RENDERERS = {
     ].join("\n");
   },
 
+  interests() {
+    return HOBBIES.map((h) => {
+      const filled = "█".repeat(h.level);
+      const rest = "░".repeat(10 - h.level);
+      const btn = h.cmd ? `  ${cmdBtn(h.cmd)}` : "";
+      return (
+        `<span class="bold c-accent">${escapeHtml(h.name.padEnd(8))}</span><span class="bar">${filled}<span class="rest">${rest}</span></span> ${h.level}/10${btn}\n` +
+        `<span class="c-muted">  └ ${escapeHtml(h.comment)}</span>`
+      );
+    }).join("\n");
+  },
+
+  photo(node) {
+    const p = PHOTOS.find((x) => x.file === node.key);
+    if (!p) return "photo not found";
+    const meta = [p.place, p.date, p.camera].filter(Boolean).map(escapeHtml).join(" · ");
+    const path = `/hobbies/photos/${p.file}`;
+    return (
+      `<figure class="photo-card">` +
+      `<img class="photo" src="img/photos/${escapeHtml(p.file)}" alt="${escapeHtml(p.title)}" loading="lazy" data-lightbox="${escapeHtml(p.file)}" />` +
+      `<figcaption><span class="bold c-accent">${escapeHtml(p.title)}</span>` +
+      (meta ? `  <span class="c-muted">${meta}</span>` : "") +
+      `\n<span class="c-muted">クリックで拡大 / ${cmdBtn("ascii " + path, "ascii")} でアスキーアート化</span></figcaption>` +
+      `</figure>`
+    );
+  },
+
+  "now-playing"() {
+    const t = MUSIC.find((m) => m.featured) || MUSIC[0];
+    if (!t) return `<span class="c-muted">(no tracks)</span>`;
+    return [
+      `<span class="c-accent">♪ now playing</span>  <span class="bold">${escapeHtml(t.artist)} — ${escapeHtml(t.title)}</span>`,
+      `<span class="c-muted">${escapeHtml(t.comment || "")}</span>`,
+      `${cmdBtn("play " + t.id, "▶ play")}`,
+    ].join("\n");
+  },
+
+  playlist() {
+    const lines = [`<span class="c-muted">#EXTM3U</span>`];
+    MUSIC.forEach((t, i) => {
+      lines.push(
+        `<span class="c-muted">${String(i + 1).padStart(2)}.</span> ${escapeHtml(t.artist)} — <span class="bold">${escapeHtml(t.title)}</span>  ${cmdBtn("play " + t.id, "▶")}`
+      );
+    });
+    lines.push(`<span class="c-muted">${cmdBtn("play")} で一覧 / play &lt;id&gt; で再生</span>`);
+    return lines.join("\n");
+  },
+
   treasure() {
     return [
       `<span class="c-warn">      ___________</span>`,
@@ -201,7 +250,7 @@ const COMMANDS = {
       print(`  4. ${cmdBtn("cd ..")}             … ひとつ上の階層へ戻る`);
       print();
       print(`<span class="c-warn bold">▼ ショートカット（迷子になったらこれ）:</span>`);
-      print(`  ${cmdBtn("about")} ${cmdBtn("skills")} ${cmdBtn("projects")} ${cmdBtn("contact")} … 各セクションを一発表示`);
+      print(`  ${cmdBtn("about")} ${cmdBtn("skills")} ${cmdBtn("projects")} ${cmdBtn("hobbies")} ${cmdBtn("contact")} … 各セクションを一発表示`);
       print(`  ${cmdBtn("tree")} … サイト全体の地図`);
       print();
       print(`<span class="c-warn bold">▼ 全コマンド:</span>`);
@@ -331,6 +380,92 @@ const COMMANDS = {
     fn() { catDir(["contact"]); },
   },
 
+  hobbies: {
+    desc: "趣味・写真・音楽を表示",
+    fn() {
+      catDir(["hobbies"]);
+      print(`<span class="c-accent bold">▸ photos/</span>  ${PHOTOS.length} 枚 … ${cmdBtn("gallery")} でサムネ一覧`);
+      print(`<span class="c-accent bold">▸ music/</span>   ${MUSIC.length} 曲 … ${cmdBtn("play")} で再生`);
+    },
+  },
+
+  gallery: {
+    desc: "写真をサムネイル一覧で表示 (gallery <page> / --all)",
+    fn(args) {
+      if (!PHOTOS.length) return print(`<span class="c-muted">(no photos)</span>`);
+      const PER_PAGE = 12;
+      const all = args.includes("--all") || args.includes("-a");
+      const total = Math.ceil(PHOTOS.length / PER_PAGE);
+      const page = Math.min(total, Math.max(1, parseInt(args.find((a) => /^\d+$/.test(a)), 10) || 1));
+      const shown = all ? PHOTOS : PHOTOS.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+      const items = shown.map(
+        (p) =>
+          `<figure class="gallery-item">` +
+          `<img src="img/photos/${escapeHtml(p.file)}" alt="${escapeHtml(p.title)}" loading="lazy" data-lightbox="${escapeHtml(p.file)}" />` +
+          `<figcaption><span data-cat="/hobbies/photos/${escapeHtml(p.file)}" style="cursor:pointer">${escapeHtml(p.title)}</span>` +
+          `<span class="c-muted"> ${escapeHtml(p.date || "")}</span></figcaption></figure>`
+      );
+      const range = all ? "all" : `${(page - 1) * PER_PAGE + 1}-${(page - 1) * PER_PAGE + shown.length}`;
+      print(`<span class="c-muted">📷 ~/hobbies/photos — ${PHOTOS.length} photo(s)  [${range}]</span>`);
+      print(`<div class="gallery">${items.join("")}</div>`);
+      if (!all && total > 1) {
+        const prev = page > 1 ? cmdBtn(`gallery ${page - 1}`, "← prev") : "";
+        const next = page < total ? cmdBtn(`gallery ${page + 1}`, "next →") : "";
+        print(`<span class="c-muted">page ${page}/${total}</span>  ${prev} ${next}  ${cmdBtn("gallery --all", "all")}`);
+      }
+      print(`<span class="c-muted">画像クリックで拡大 / タイトルクリックで詳細</span>`);
+    },
+  },
+
+  play: {
+    desc: "好きな曲を再生 (play <id>)",
+    fn(args) {
+      const key = args[0];
+      const track = MUSIC.find((m) => m.id === key);
+      if (!track) {
+        if (key) print(`play: ${escapeHtml(key)}: track not found`, "c-error");
+        print(`usage: play &lt;id&gt;`);
+        MUSIC.forEach((t) =>
+          print(`  ${cmdBtn("play " + t.id, t.id.padEnd(14))} ${escapeHtml(t.artist)} — ${escapeHtml(t.title)}`)
+        );
+        return;
+      }
+      const run = () => {
+        print(`<span class="c-accent">♪ now playing</span>  <span class="bold">${escapeHtml(track.artist)} — ${escapeHtml(track.title)}</span>`);
+        if (track.comment) print(`<span class="c-muted">${escapeHtml(track.comment)}</span>`);
+        print(
+          `<div class="embed"><iframe src="https://open.spotify.com/embed/track/${encodeURIComponent(track.spotify)}?utm_source=generator&theme=0" ` +
+            `width="100%" height="152" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" title="Spotify: ${escapeHtml(track.title)}"></iframe></div>`
+        );
+      };
+      if (localStorage.getItem("pf-embed-ok") === "1") return run();
+      print(`<span class="c-warn">Spotify の埋め込みプレイヤー（外部コンテンツ）を読み込みます。続けますか？ [y/N]</span> ${cmdBtn("y", "yes")}`);
+      pendingConfirm = () => {
+        localStorage.setItem("pf-embed-ok", "1");
+        run();
+      };
+    },
+  },
+
+  ascii: {
+    desc: "写真をアスキーアートに変換",
+    async fn(args) {
+      const target = args.find((a) => !a.startsWith("-"));
+      if (!target) return print(`usage: ascii &lt;photo&gt;（例: ${cmdBtn("ascii /hobbies/photos/" + (PHOTOS[0]?.file || ""))}）`, "c-error");
+      const node = getNode(resolvePath(target));
+      if (!node || node.render !== "photo") return print(`ascii: ${escapeHtml(target)}: not an image file`, "c-error");
+      const p = PHOTOS.find((x) => x.file === node.key);
+      print(`<span class="c-muted">converting ${escapeHtml(p.file)} ...</span>`);
+      try {
+        const art = await imageToAscii(`img/photos/${p.file}`, 72);
+        print(`<pre class="ascii-art">${escapeHtml(art)}</pre>`);
+        print(`<span class="c-muted">${escapeHtml(p.title)} — ${cmdBtn("cat /hobbies/photos/" + p.file, "元画像を見る")}</span>`);
+      } catch {
+        print(`ascii: 画像の読み込みに失敗しました`, "c-error");
+      }
+    },
+  },
+
   neofetch: {
     desc: "システム情報風プロフィール",
     fn() {
@@ -344,6 +479,7 @@ const COMMANDS = {
         `<span class="c-accent">Shell</span>    portfolio-sh 1.0`,
         `<span class="c-accent">Uptime</span>   ${uptime()}`,
         `<span class="c-accent">Theme</span>    ${document.body.dataset.theme}`,
+        `<span class="c-accent">Music</span>    ♪ ${escapeHtml(((m) => (m ? `${m.artist} — ${m.title}` : "—"))(MUSIC.find((x) => x.featured) || MUSIC[0]))}`,
         `<span class="c-accent">Motto</span>    keep it fun & shippable`,
       ];
       print(`<span class="ascii">${escapeHtml(ASCII_LOGO)}</span>`);
@@ -526,6 +662,65 @@ function uptime() {
 }
 
 /* =========================================================
+ *  image → ascii art
+ * ========================================================= */
+function imageToAscii(src, cols = 72) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      // 等幅フォントは縦長なので行数を半分にしてアスペクト比を合わせる
+      const rows = Math.max(1, Math.round((img.height / img.width) * cols * 0.5));
+      const c = document.createElement("canvas");
+      c.width = cols;
+      c.height = rows;
+      const ctx = c.getContext("2d");
+      ctx.drawImage(img, 0, 0, cols, rows);
+      const { data } = ctx.getImageData(0, 0, cols, rows);
+      let ramp = " .:-=+*#%@";
+      if (document.body.dataset.theme === "light") ramp = ramp.split("").reverse().join("");
+      const lums = [];
+      for (let i = 0; i < data.length; i += 4) {
+        lums.push((0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]) / 255);
+      }
+      // 明暗をフルレンジに引き伸ばして暗い写真でも輪郭が出るようにする
+      const min = Math.min(...lums), max = Math.max(...lums), range = max - min || 1;
+      const lines = [];
+      for (let y = 0; y < rows; y++) {
+        let line = "";
+        for (let x = 0; x < cols; x++) {
+          const lum = (lums[y * cols + x] - min) / range;
+          line += ramp[Math.min(ramp.length - 1, Math.floor(lum * ramp.length))];
+        }
+        lines.push(line);
+      }
+      resolve(lines.join("\n"));
+    };
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+/* =========================================================
+ *  lightbox
+ * =========================================================*/
+const lightboxEl = $("lightbox");
+const lightboxImg = $("lightbox-img");
+const lightboxCap = $("lightbox-cap");
+
+function openLightbox(file) {
+  const p = PHOTOS.find((x) => x.file === file);
+  if (!p) return;
+  lightboxImg.src = `img/photos/${p.file}`;
+  lightboxImg.alt = p.title;
+  lightboxCap.textContent = [p.title, p.place, p.date, p.camera].filter(Boolean).join(" · ");
+  lightboxEl.hidden = false;
+}
+function closeLightbox() {
+  lightboxEl.hidden = true;
+  lightboxImg.src = "";
+}
+
+/* =========================================================
  *  prompt & input
  * ========================================================= */
 function updatePrompt() {
@@ -555,6 +750,16 @@ async function execute(raw) {
 
   if (cmdHistory[cmdHistory.length - 1] !== trimmed) cmdHistory.push(trimmed);
   histIdx = -1;
+
+  if (pendingConfirm) {
+    const fn = pendingConfirm;
+    pendingConfirm = null;
+    if (/^y(es)?$/i.test(trimmed)) await fn();
+    else print(`キャンセルしました`, "c-muted");
+    print();
+    scrollToBottom();
+    return;
+  }
 
   const [name, ...args] = trimmed.split(/\s+/);
   const cmd = COMMANDS[name.toLowerCase()];
@@ -725,8 +930,18 @@ document.addEventListener("keydown", (e) => {
   print(`現実世界へようこそ。`, "c-muted");
 }, true);
 
-/* クリック実行（cmd-btn / ls・tree の項目） */
+/* lightbox 閉じる: Esc */
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape" || lightboxEl.hidden) return;
+  e.preventDefault();
+  closeLightbox();
+}, true);
+
+/* クリック実行（cmd-btn / ls・tree の項目 / 写真の拡大） */
 document.addEventListener("click", async (e) => {
+  if (e.target.closest("#lightbox")) return closeLightbox();
+  const lb = e.target.closest("[data-lightbox]");
+  if (lb) return openLightbox(lb.dataset.lightbox);
   const btn = e.target.closest(".cmd-btn, .chip");
   if (btn?.dataset.cmd) {
     if (!animating) await typeAndRun(btn.dataset.cmd);

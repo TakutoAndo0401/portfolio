@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8a5c"/><stop offset="1" stop-color="#2b1a4a"/></linearGradient></defs>
+  <rect width="1200" height="800" fill="url(#g)"/>
+  <circle cx="600" cy="480" r="120" fill="#ffd166"/><rect y="520" width="1200" height="280" fill="#1a1030" opacity=".85"/>
+  <text x="600" y="740" font-family="monospace" font-size="28" fill="rgba(255,255,255,.55)" text-anchor="middle">sunset — sample photo (replace me)</text>
+</svg>

@@ -42,6 +42,7 @@
       <button class="chip" data-cmd="about">about</button>
       <button class="chip" data-cmd="skills">skills</button>
       <button class="chip" data-cmd="projects">projects</button>
+      <button class="chip" data-cmd="hobbies">hobbies</button>
       <button class="chip" data-cmd="contact">contact</button>
       <button class="chip" data-cmd="theme">theme</button>
     </footer>
@@ -49,6 +50,13 @@
 
   <!-- real (hidden) input: mobile keyboard + IME support -->
   <input id="hidden-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-label="コマンド入力" />
+
+  <!-- photo lightbox -->
+  <div class="lightbox" id="lightbox" hidden role="dialog" aria-label="写真の拡大表示">
+    <img id="lightbox-img" alt="" />
+    <div class="lightbox-cap" id="lightbox-cap"></div>
+    <div class="lightbox-hint">click / Esc to close</div>
+  </div>
 
   <!-- boot screen -->
   <div class="boot" id="boot">

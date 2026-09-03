@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8d5b5"/><stop offset="1" stop-color="#8b5a2b"/></linearGradient></defs>
+  <rect width="1200" height="800" fill="url(#g)"/>
+  <ellipse cx="600" cy="420" rx="220" ry="180" fill="#3b2314"/><ellipse cx="600" cy="380" rx="200" ry="120" fill="#6b3e1e"/><path d="M820 380 q120 0 120 90 q0 90 -120 90" stroke="#3b2314" stroke-width="30" fill="none"/>
+  <text x="600" y="740" font-family="monospace" font-size="28" fill="rgba(255,255,255,.55)" text-anchor="middle">coffee — sample photo (replace me)</text>
+</svg>

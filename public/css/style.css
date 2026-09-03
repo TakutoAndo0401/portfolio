@@ -250,6 +250,94 @@ body[data-theme="light"] .ascii { text-shadow: none; }
   margin-right: 4px;
 }
 
+/* ---------- hobbies: photos ---------- */
+.photo-card {
+  margin: 6px 0;
+  padding: 8px;
+  max-width: 520px;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+}
+.photo-card img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  cursor: zoom-in;
+  filter: saturate(0.9) contrast(1.05);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--glow) 35%, transparent);
+}
+.photo-card figcaption { margin-top: 6px; white-space: pre-wrap; }
+
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+  margin: 8px 0;
+  max-width: 720px;
+}
+.gallery-item { margin: 0; }
+.gallery-item img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  border-radius: 4px;
+  cursor: zoom-in;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.gallery-item img:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 16px var(--glow);
+}
+.gallery-item figcaption { font-size: 0.82em; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.ascii-art {
+  margin: 4px 0;
+  font-size: clamp(5px, 1.1vw, 9px);
+  line-height: 1;
+  letter-spacing: 0;
+  color: var(--accent);
+  text-shadow: 0 0 6px var(--glow);
+  overflow-x: auto;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.88);
+  cursor: zoom-out;
+  animation: line-in 0.15s ease-out;
+}
+.lightbox[hidden] { display: none; }
+.lightbox img {
+  max-width: 100%;
+  max-height: 80vh;
+  border-radius: 6px;
+  box-shadow: 0 0 40px var(--glow);
+}
+.lightbox-cap { color: var(--fg); font-size: 13px; text-align: center; }
+.lightbox-hint { color: var(--muted); font-size: 11px; }
+
+/* ---------- hobbies: music ---------- */
+.embed {
+  margin: 6px 0;
+  max-width: 520px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 0 18px color-mix(in srgb, var(--glow) 35%, transparent);
+}
+.embed iframe { display: block; border: 0; }
+
 /* ---------- prompt / input ---------- */
 .input-line { display: flex; flex-wrap: wrap; align-items: baseline; }
 .prompt { white-space: pre; }
