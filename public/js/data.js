@@ -96,18 +96,22 @@ const PROJECTS = [
 
 /* 趣味: level は 0-10 の熱量。cmd を付けると関連ディレクトリへのボタンが出ます */
 const HOBBIES = [
-  { name: "写真", level: 8, comment: "旅先のスナップと風景が多め。撮った写真は photos/ に置いています。", cmd: "gallery" },
-  { name: "音楽", level: 9, comment: "作業中も移動中もずっと何か流してます。好きな曲は music/ から聴けます。", cmd: "cat hobbies/music/playlist.m3u" },
-  { name: "ガジェット", level: 7, comment: "キーボード・ターミナル環境いじり。このサイトもその延長です。" },
-  { name: "コーヒー", level: 6, comment: "浅煎りのハンドドリップ派。" },
+  { name: "写真", level: 7, comment: "旅先のスナップと風景が多め。撮った写真は photos/ に置いています。", cmd: "gallery" },
+  { name: "音楽", level: 7, comment: "作業中も移動中もずっと何か流してます。好きな曲は music/ から聴けます。", cmd: "cat hobbies/music/playlist.m3u" },
+  { name: "コーヒー", level: 7, comment: "深煎り・どんな時も絶対にホットでなきゃ嫌だ。" },
+  { name: "ドライブ", level: 7, comment: "TOYOTA DBA-ZN6 86 乗ってます" },
+  { name: "スキューバダイビング", level: 5, comment: "まだオープン・ウォーター・ダイバーのライセンスのみ。" },
 ];
 
 /* 写真: public/img/photos/ に置いたファイル名を file に指定 */
 const PHOTOS = [
-  { file: "sample-sunset.svg", title: "夕暮れの海", place: "神奈川", date: "2024.05", camera: "iPhone 15 Pro" },
-  { file: "sample-city-night.svg", title: "夜の街", place: "東京・新宿", date: "2024.02", camera: "iPhone 15 Pro" },
-  { file: "sample-forest.svg", title: "森の小径", place: "栃木・日光", date: "2023.10", camera: "iPhone 15 Pro" },
-  { file: "sample-coffee.svg", title: "朝のコーヒー", place: "自宅", date: "2023.08", camera: "iPhone 15 Pro" },
+  { file: "IMG_20260831_211322187.jpg", title: "", place: "大黒パーキング", date: "2026.08.31", camera: "Nothing Phone (2a)" },
+  { file: "1784088999151.jpg", title: "", place: "千里川土手", date: "", camera: "Pentax Espio 70（フジカラー SUPERIA PREMIUM 400）" },
+  { file: "1784088999330.jpg", title: "", place: "阪急六甲駅", date: "", camera: "Pentax Espio 70（フジカラー SUPERIA PREMIUM 400）" },
+  { file: "1784088999702.jpg", title: "", place: "成田空港 第三ターミナル", date: "", camera: "Pentax Espio 70（フジカラー SUPERIA PREMIUM 400）" },
+  { file: "IMG_20260621_100558559.jpg", title: "", place: "桂浜", date: "2026.06.21", camera: "Nothing Phone (2a)" },
+  { file: "1774247606839.jpg", title: "", place: "江ノ島", date: "", camera: "Pentax Espio 70（Kodak ULTRAMAX 400）" },
+  { file: "1774247606502.jpg", title: "", place: "江ノ島", date: "", camera: "Pentax Espio 70（Kodak ULTRAMAX 400）" },
 ];
 
 /* 音楽: spotify は track ID (https://open.spotify.com/track/<ID>) */
