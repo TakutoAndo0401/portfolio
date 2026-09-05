@@ -9,3 +9,6 @@
 
 /js/*
   Cache-Control: public, max-age=3600
+
+/img/*
+  Cache-Control: public, max-age=604800

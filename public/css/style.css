@@ -259,6 +259,7 @@ body[data-theme="light"] .ascii { text-shadow: none; }
   border-radius: 6px;
   background: color-mix(in srgb, var(--accent) 4%, transparent);
 }
+.photo-card picture { display: block; }
 .photo-card img {
   display: block;
   width: 100%;
@@ -278,6 +279,7 @@ body[data-theme="light"] .ascii { text-shadow: none; }
   max-width: 720px;
 }
 .gallery-item { margin: 0; }
+.gallery-item picture { display: block; }
 .gallery-item img {
   display: block;
   width: 100%;
@@ -292,7 +294,15 @@ body[data-theme="light"] .ascii { text-shadow: none; }
   transform: translateY(-2px);
   box-shadow: 0 0 16px var(--glow);
 }
-.gallery-item figcaption { font-size: 0.82em; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gallery-item figcaption {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82em;
+  margin-top: 4px;
+}
+.gallery-place { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gallery-item .cmd-btn { flex: none; font-size: 0.9em; }
 
 .ascii-art {
   margin: 4px 0;

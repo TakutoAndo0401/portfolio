@@ -66,6 +66,19 @@ const cmdBtn = (cmd, label) =>
 const link = (url, label) =>
   `<a class="c-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(label || url)}</a>`;
 
+/* 写真: scripts/optimize-images.mjs が生成した WebP (<base>-<width>.webp) を参照する */
+const PHOTO_WIDTHS = [480, 720, 1080, 1920];
+const photoBase = (p) => p.file.replace(/\.[^.]+$/, "");
+const photoSrc = (p, w) => `img/photos/${photoBase(p)}-${w}.webp`;
+const photoSrcset = (p, widths = PHOTO_WIDTHS) => widths.map((w) => `${photoSrc(p, w)} ${w}w`).join(", ");
+const photoAlt = (p) => [p.place, p.date].filter(Boolean).join(" ") || "photo";
+const photoMeta = (p) => [p.place, p.date, p.camera].filter(Boolean);
+/* スマホ判定。この幅以下ではサムネ 480w / 単体表示・拡大 720w に固定し、DPR が高くても大きい画像を配らない */
+const PHOTO_MOBILE_MQ = "(max-width: 600px)";
+const PHOTO_MOBILE_THUMB = 480;
+const PHOTO_MOBILE_FULL = 720;
+const isMobileViewport = () => matchMedia(PHOTO_MOBILE_MQ).matches;
+
 /* =========================================================
  *  virtual filesystem
  * ========================================================= */
@@ -174,14 +187,18 @@ const RENDERERS = {
   photo(node) {
     const p = PHOTOS.find((x) => x.file === node.key);
     if (!p) return "photo not found";
-    const meta = [p.place, p.date, p.camera].filter(Boolean).map(escapeHtml).join(" · ");
+    const meta = photoMeta(p).map(escapeHtml).join(" · ");
     const path = `/hobbies/photos/${p.file}`;
     return (
-      `<figure class="photo-card">` +
-      `<img class="photo" src="img/photos/${escapeHtml(p.file)}" alt="${escapeHtml(p.title)}" loading="lazy" data-lightbox="${escapeHtml(p.file)}" />` +
-      `<figcaption><span class="bold c-accent">${escapeHtml(p.title)}</span>` +
-      (meta ? `  <span class="c-muted">${meta}</span>` : "") +
-      `\n<span class="c-muted">クリックで拡大 / ${cmdBtn("ascii " + path, "ascii")} でアスキーアート化</span></figcaption>` +
+      `<figure class="photo-card"><picture>` +
+      `<source media="${PHOTO_MOBILE_MQ}" srcset="${escapeHtml(photoSrc(p, PHOTO_MOBILE_FULL))}" />` +
+      `<img class="photo" src="${escapeHtml(photoSrc(p, 1080))}" srcset="${escapeHtml(photoSrcset(p, [720, 1080, 1920]))}" ` +
+      `sizes="504px" alt="${escapeHtml(photoAlt(p))}" ` +
+      (p.width && p.height ? `width="${p.width}" height="${p.height}" ` : "") +
+      `loading="lazy" decoding="async" data-lightbox="${escapeHtml(p.file)}" /></picture>` +
+      `<figcaption>` +
+      (meta ? `<span class="c-accent">${meta}</span>\n` : "") +
+      `<span class="c-muted">クリックで拡大 / ${cmdBtn("ascii " + path, "ascii")} でアスキーアート化</span></figcaption>` +
       `</figure>`
     );
   },
@@ -400,10 +417,14 @@ const COMMANDS = {
       const shown = all ? PHOTOS : PHOTOS.slice((page - 1) * PER_PAGE, page * PER_PAGE);
       const items = shown.map(
         (p) =>
-          `<figure class="gallery-item">` +
-          `<img src="img/photos/${escapeHtml(p.file)}" alt="${escapeHtml(p.title)}" loading="lazy" data-lightbox="${escapeHtml(p.file)}" />` +
-          `<figcaption><span data-cat="/hobbies/photos/${escapeHtml(p.file)}" style="cursor:pointer">${escapeHtml(p.title)}</span>` +
-          `<span class="c-muted"> ${escapeHtml(p.date || "")}</span></figcaption></figure>`
+          `<figure class="gallery-item"><picture>` +
+          // スマホでは DPR が高くても 480w に固定（サムネなので十分・通信量優先）
+          `<source media="${PHOTO_MOBILE_MQ}" srcset="${escapeHtml(photoSrc(p, PHOTO_MOBILE_THUMB))}" />` +
+          `<img src="${escapeHtml(photoSrc(p, 480))}" srcset="${escapeHtml(photoSrcset(p, [480, 1080]))}" ` +
+          `sizes="230px" alt="${escapeHtml(photoAlt(p))}" ` +
+          `loading="lazy" decoding="async" data-lightbox="${escapeHtml(p.file)}" /></picture>` +
+          `<figcaption><span class="c-muted gallery-place">${escapeHtml(p.place || "")}</span>` +
+          `${cmdBtn("cat /hobbies/photos/" + p.file, "詳細")}</figcaption></figure>`
       );
       const range = all ? "all" : `${(page - 1) * PER_PAGE + 1}-${(page - 1) * PER_PAGE + shown.length}`;
       print(`<span class="c-muted">📷 ~/hobbies/photos — ${PHOTOS.length} photo(s)  [${range}]</span>`);
@@ -413,7 +434,7 @@ const COMMANDS = {
         const next = page < total ? cmdBtn(`gallery ${page + 1}`, "next →") : "";
         print(`<span class="c-muted">page ${page}/${total}</span>  ${prev} ${next}  ${cmdBtn("gallery --all", "all")}`);
       }
-      print(`<span class="c-muted">画像クリックで拡大 / タイトルクリックで詳細</span>`);
+      print(`<span class="c-muted">画像クリックで拡大 / 詳細 で撮影情報を表示</span>`);
     },
   },
 
@@ -457,9 +478,9 @@ const COMMANDS = {
       const p = PHOTOS.find((x) => x.file === node.key);
       print(`<span class="c-muted">converting ${escapeHtml(p.file)} ...</span>`);
       try {
-        const art = await imageToAscii(`img/photos/${p.file}`, 72);
+        const art = await imageToAscii(photoSrc(p, 480), 72);
         print(`<pre class="ascii-art">${escapeHtml(art)}</pre>`);
-        print(`<span class="c-muted">${escapeHtml(p.title)} — ${cmdBtn("cat /hobbies/photos/" + p.file, "元画像を見る")}</span>`);
+        print(`<span class="c-muted">${escapeHtml(photoMeta(p).join(" · "))} — ${cmdBtn("cat /hobbies/photos/" + p.file, "元画像を見る")}</span>`);
       } catch {
         print(`ascii: 画像の読み込みに失敗しました`, "c-error");
       }
@@ -710,13 +731,22 @@ const lightboxCap = $("lightbox-cap");
 function openLightbox(file) {
   const p = PHOTOS.find((x) => x.file === file);
   if (!p) return;
-  lightboxImg.src = `img/photos/${p.file}`;
-  lightboxImg.alt = p.title;
-  lightboxCap.textContent = [p.title, p.place, p.date, p.camera].filter(Boolean).join(" · ");
+  if (isMobileViewport()) {
+    lightboxImg.removeAttribute("srcset");
+    lightboxImg.removeAttribute("sizes");
+    lightboxImg.src = photoSrc(p, PHOTO_MOBILE_FULL);
+  } else {
+    lightboxImg.sizes = "100vw";
+    lightboxImg.srcset = photoSrcset(p, [1080, 1920]);
+    lightboxImg.src = photoSrc(p, 1080);
+  }
+  lightboxImg.alt = photoAlt(p);
+  lightboxCap.textContent = photoMeta(p).join(" · ");
   lightboxEl.hidden = false;
 }
 function closeLightbox() {
   lightboxEl.hidden = true;
+  lightboxImg.removeAttribute("srcset");
   lightboxImg.src = "";
 }
 

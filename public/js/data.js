@@ -103,16 +103,30 @@ const HOBBIES = [
   { name: "スキューバダイビング", level: 5, comment: "まだオープン・ウォーター・ダイバーのライセンスのみ。" },
 ];
 
-/* 写真: public/img/photos/ に置いたファイル名を file に指定 */
-const PHOTOS = [
-  { file: "IMG_20260831_211322187.jpg", title: "", place: "大黒パーキング", date: "2026.08.31", camera: "Nothing Phone (2a)" },
-  { file: "1784088999151.jpg", title: "", place: "千里川土手", date: "", camera: "Pentax Espio 70（フジカラー SUPERIA PREMIUM 400）" },
-  { file: "1784088999330.jpg", title: "", place: "阪急六甲駅", date: "", camera: "Pentax Espio 70（フジカラー SUPERIA PREMIUM 400）" },
-  { file: "1784088999702.jpg", title: "", place: "成田空港 第三ターミナル", date: "", camera: "Pentax Espio 70（フジカラー SUPERIA PREMIUM 400）" },
-  { file: "IMG_20260621_100558559.jpg", title: "", place: "桂浜", date: "2026.06.21", camera: "Nothing Phone (2a)" },
-  { file: "1774247606839.jpg", title: "", place: "江ノ島", date: "", camera: "Pentax Espio 70（Kodak ULTRAMAX 400）" },
-  { file: "1774247606502.jpg", title: "", place: "江ノ島", date: "", camera: "Pentax Espio 70（Kodak ULTRAMAX 400）" },
-];
+/* 写真
+ *  1. photos/ に元画像を置く
+ *  2. npm run images  → WebP 変換 + photos.generated.js 生成 + ここ (PHOTO_META) に新しい写真の行を追記
+ *     date / camera は EXIF から自動で入る。自由に書き換えてよい（再実行しても手で書いた値は上書きされない）
+ *  3. place（場所）や order（小さいほど前。省略時は撮影日の新しい順）を必要に応じて書く
+ */
+const PHOTO_META = {
+  "IMG_20260831_211322187.jpg": { place: "大黒パーキング", date: "2026.08.31", camera: "Nothing Phone (2a)", order: 1 },
+  "1784088999151.jpg": { place: "千里川土手", date: "", camera: "Pentax Espio 70（フジカラー SUPERIA PREMIUM 400）", order: 2 },
+  "1784088999330.jpg": { place: "阪急六甲駅", date: "", camera: "Pentax Espio 70（フジカラー SUPERIA PREMIUM 400）", order: 3 },
+  "1784088999702.jpg": { place: "成田空港 第三ターミナル", date: "", camera: "Pentax Espio 70（フジカラー SUPERIA PREMIUM 400）", order: 4 },
+  "IMG_20260621_100558559.jpg": { place: "桂浜", date: "2026.06.21", camera: "Nothing Phone (2a)", order: 5 },
+  "1774247606839.jpg": { place: "江ノ島", date: "", camera: "Pentax Espio 70（Kodak ULTRAMAX 400）", order: 6 },
+  "1774247606502.jpg": { place: "江ノ島", date: "", camera: "Pentax Espio 70（Kodak ULTRAMAX 400）", order: 7 },
+};
+
+const PHOTOS = (typeof PHOTO_FILES === "undefined" ? [] : PHOTO_FILES)
+  .map((p) => ({ ...p, ...(PHOTO_META[p.file] || {}) }))
+  .sort(
+    (a, b) =>
+      (a.order ?? Infinity) - (b.order ?? Infinity) ||
+      (b.date || "").localeCompare(a.date || "") ||
+      a.file.localeCompare(b.file)
+  );
 
 /* 音楽: spotify は track ID (https://open.spotify.com/track/<ID>) */
 const MUSIC = [
