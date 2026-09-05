@@ -10,7 +10,7 @@ npm run dev
 
 ## 内容の編集
 
-- **`public/js/data.js` を編集する
+- `public/js/data.js` を編集する
 
 | 定数 | 内容 |
 | --- | --- |
